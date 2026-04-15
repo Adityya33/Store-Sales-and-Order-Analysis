@@ -1,0 +1,89 @@
+# E-commerce Sales & Order Analysis
+
+#1 Total Orders Count
+Select count(*) as Total_orders from sales;
+
+#2 Total Revenue
+Select sum(Amount)as Total_revenue from sales;
+
+#3 Average Order value
+Select avg(Amount) as Average_Order_Value from sales;
+
+#4 Total Unique Customer Count
+Select count(distinct Cust_id) as Total_Unique_customers from sales;
+
+#5 Delivered Order Count
+Select count(*) as Delivered_orders from sales
+where Status="delivered";
+
+#6 Channel Wise Revenue
+Select Channel,Sum(Amount)as Revenue from sales
+group by Channel
+order by revenue desc;
+
+#7 State Wise Sales 
+Select Ship_state ,Sum(Amount) as Sales from sales
+group by Ship_state
+order by sales desc;
+
+#8 Gender Wise Order Count
+Select Gender,Count(*) as Total_Orders from sales
+group by Gender 
+order by Total_orders desc;
+
+#9 Category Wise Sales
+Select Category,Sum(Amount) as Total_sales from sales
+group by Category
+order by total_sales desc;
+
+#10 Size Wise Quantity sold
+Select Size,sum(Qty) as Quantity_sold from sales
+group by Size
+order by sum(Qty) desc;
+
+#11 Age Group Wise Sales
+select (case when Age <18 then "Junior"
+when Age >=18 and Age <26 then "Young"
+when Age >=26 and Age <41 then "Adult"
+else "Senior" end) as Age_Category,sum(Amount) from sales
+group by Age_Category;
+
+#12 Order Status Category Wise Count
+Select (case when Status="Delivered" then "Sucess" else "Failed" end ) as Order_Category,
+count(*) as Total_Orders from sales
+group by Order_Category
+order by Total_Orders desc;
+
+#13 Top 10 Customers by Spending
+Select Cust_id,Sum(Amount)as Total_Spending from sales
+group by Cust_id
+order by sum(Amount)desc
+limit 10;
+
+#14 Monthly Sales Trend
+Select year(str_to_date(Date,'%d-%m-%y')) as Year
+,month(str_to_date(Date,'%d-%m-%y')) as Month,sum(Amount) as Total_sales from sales
+group by Month,Year
+order by Year,Month;
+
+#15 Highest Revenue City in each State
+select Ship_state,Ship_city,Sales from(
+select Ship_state,Ship_city,sum(Amount) as Sales,
+rank()over(partition by Ship_state order by sum(Amount)desc) as rnk from sales
+group by Ship_state,Ship_city)t
+where rnk=1
+Order by Sales desc;
+
+#16 Success Rate
+select Round(sum(case when Status="Delivered" then 1 else 0 end)*100/count(*),2) as Sucess_rate
+ from sales;
+ 
+#17 Cancel Rate
+select Round(sum(case when Status="Cancelled" then 1 else 0 end)*100/count(*),2) as Cancel_rate
+ from sales;
+ 
+#18 Repeating customers
+select count(*) from(select Cust_id,count(*) as Count from sales
+group by Cust_id
+having count(*)>1
+)t;
